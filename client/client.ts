@@ -75,23 +75,23 @@ async function main() {
     // );
     // console.log("VaultAccount: " + tokenVault);
     //
-    let confirmOptions = {
-        skipPreflight: true,
-    };
-
-    let txHash = await program.methods
-        .initialize()
-        .accounts({
-            tokenAccountOwnerPda: tokenAccountOwnerPda,
-            // vaultTokenAccount: tokenVault,
-            senderTokenAccount: tokenAccount.address,
-            mintOfTokenBeingSent: createdSFT.mintAddress,
-            signer: program.provider.publicKey,
-        })
-        .rpc(confirmOptions);
-
-    console.log(`Initialize`);
-    await logTransaction(txHash);
+    // let confirmOptions = {
+    //     skipPreflight: true,
+    // };
+    //
+    // let txHash = await program.methods
+    //     .initialize()
+    //     .accounts({
+    //         // tokenAccountOwnerPda: tokenAccountOwnerPda,
+    //         // vaultTokenAccount: tokenVault,
+    //         // senderTokenAccount: tokenAccount.address,
+    //         mintOfTokenBeingSent: createdSFT.mintAddress,
+    //         signer: program.provider.publicKey,
+    //     })
+    //     .rpc(confirmOptions);
+    //
+    // console.log(`Initialize`);
+    // await logTransaction(txHash);
 
     // console.log(`Vault initialized.`);
     console.log(
@@ -108,17 +108,27 @@ async function main() {
     // );
 }
 
-async function logTransaction(txHash) {
-  const { blockhash, lastValidBlockHeight } =
-    await program.provider.connection.getLatestBlockhash();
+main()
+    .then(() => {
+        console.log("Finished successfully")
+        process.exit(0)
+    })
+    .catch((error) => {
+        console.log(error)
+        process.exit(1)
+    })
 
-  await program.provider.connection.confirmTransaction({
-    blockhash,
-    lastValidBlockHeight,
-    signature: txHash,
-  });
-
-  console.log(
-    `Solana Explorer: https://explorer.solana.com/tx/${txHash}?cluster=devnet`
-  );
-}
+// async function logTransaction(txHash) {
+//   const { blockhash, lastValidBlockHeight } =
+//     await program.provider.connection.getLatestBlockhash();
+//
+//   await program.provider.connection.confirmTransaction({
+//     blockhash,
+//     lastValidBlockHeight,
+//     signature: txHash,
+//   });
+//
+//   console.log(
+//     `Solana Explorer: https://explorer.solana.com/tx/${txHash}?cluster=devnet`
+//   );
+// }

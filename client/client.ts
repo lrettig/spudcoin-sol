@@ -1,12 +1,12 @@
 import * as anchor from "@coral-xyz/anchor";
-import {initializeKeypair} from "./initializeKeypair"
+// import NodeWallet from "@coral-xyz/anchor/dist/cjs/nodewallet";
+// import {initializeKeypair} from "./initializeKeypair"
 import {getAccount, getOrCreateAssociatedTokenAccount,} from "@solana/spl-token";
 import {PublicKey} from "@solana/web3.js";
 import {keypairIdentity, Metaplex, token} from "@metaplex-foundation/js";
 import type {TokenVault} from "../target/types/token_vault";
 import {TokenStandard} from "@metaplex-foundation/mpl-token-metadata";
 
-const program = anchor.workspace.TokenVault as anchor.Program<TokenVault>;
 // const keypair = anchor.web3.Keypair.generate();
 // const mintAuthority = (program.provider as anchor.AnchorProvider).wallet
 const decimals = 9;
@@ -15,29 +15,39 @@ const decimals = 9;
 anchor.setProvider(anchor.AnchorProvider.env());
 
 async function main() {
-    const user = await initializeKeypair(program.provider.connection);
+    const program = anchor.workspace.TokenVault as anchor.Program<TokenVault>;
+    // const user = await initializeKeypair(program.provider.connection);
+    const user = anchor.web3.Keypair.generate()
     // const user = await initializeKeypair(anchor.getProvider().connection);
     console.log(user.publicKey.toBase58())
+    const connection = anchor.getProvider().connection
+    const balance = await connection.getBalance(user.publicKey)
+    console.log("Current balance is", balance)
+    console.log("Requesting airdrop")
+    const t = await connection.requestAirdrop(user.publicKey, anchor.web3.LAMPORTS_PER_SOL)
+    await connection.confirmTransaction(t)
+    const newBalance = await connection.getBalance(user.publicKey)
+    console.log("New balance is", newBalance / anchor.web3.LAMPORTS_PER_SOL)
 
     let [tokenAccountOwnerPda] = PublicKey.findProgramAddressSync(
         [Buffer.from("token_account_owner_pda")],
         program.programId
     );
 
-    const metaplex = new Metaplex(program.provider.connection).use(
+    const metaplex = new Metaplex(connection).use(
         keypairIdentity(user)
     );
 
-    const createdSFT = await metaplex.nfts().createSft({
+    const createdSFT = await metaplex.nfts().create({
         uri: "https://storage.googleapis.com/lane-misc/spudcoinmeta",
         name: "SpudCoin",
-        symbol: "SPUD",
+        // symbol: "SPUD",
         sellerFeeBasisPoints: 0,
-        updateAuthority: user,
-        mintAuthority: user,
-        decimals: decimals,
-        tokenStandard: TokenStandard.Fungible,
-        isMutable: true,
+        // // updateAuthority: user,
+        // // mintAuthority: user,
+        // decimals: decimals,
+        // tokenStandard: TokenStandard.Fungible,
+        // isMutable: true,
     });
 
     console.log(
